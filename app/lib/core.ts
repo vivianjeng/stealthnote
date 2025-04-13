@@ -47,30 +47,34 @@ export async function postMessage(message: Message) {
 }
 
 export async function verifyMessage(message: SignedMessageWithProof) {
-  if (new Date(message.timestamp).getTime() < new Date("2025-02-23").getTime()) {
-    alert(
-      "Messages generated before 2025-02-23 are not verifiable due to major changes in the circuit. " +
-      "Future versions of this app will be backward compatible."
-    );
-    throw new Error("Message not verifiable");
-  }
+  try {
+    if (new Date(message.timestamp).getTime() < new Date("2025-02-23").getTime()) {
+      throw new Error(
+        "Messages generated before 2025-02-23 are not verifiable due to major changes in the circuit. " +
+        "Future versions of this app will be backward compatible."
+      );
+    }
 
-  // Verify the message signature (signed with sender's ephemeral pubkey)
-  let isValid = await verifyMessageSignature(message);
-  if (!isValid) {
-    alert("Signature verification failed for the message");
+    // Verify the message signature (signed with sender's ephemeral pubkey)
+    let isValid = await verifyMessageSignature(message);
+    if (!isValid) {
+      throw new Error("Signature verification failed for the message");
+    }
+
+    // Verify the proof that the sender (their ephemeral pubkey) belongs to the AnonGroup
+    const provider = Providers[message.anonGroupProvider];
+    isValid = await provider.verifyProof(
+      message.proof,
+      message.anonGroupId,
+      message.ephemeralPubkey,
+      message.ephemeralPubkeyExpiry,
+      message.proofArgs
+    );
+
+    return isValid;
+  } catch (error) {
+    // @ts-expect-error - error is an unknown type
+    alert(error.message);
     return false;
   }
-
-  // Verify the proof that the sender (their ephemeral pubkey) belongs to the AnonGroup
-  const provider = Providers[message.anonGroupProvider];
-  isValid = await provider.verifyProof(
-    message.proof,
-    message.anonGroupId,
-    message.ephemeralPubkey,
-    message.ephemeralPubkeyExpiry,
-    message.proofArgs
-  );
-
-  return isValid;
 }

@@ -1,6 +1,7 @@
-import { JWT_CIRCUIT_HELPER } from "../circuits/jwt-0.3.0";
+import { JWTCircuitHelper  } from "../circuits/jwt";
 import { AnonGroupProvider, EphemeralKey, LocalStorageKeys } from "../types";
 import { pubkeyModulusFromJWK } from "../utils";
+
 
 /**
  * GoogleOAuth AnonGroupProvider for people in a company (using company domain in Google Workspace account)
@@ -37,17 +38,26 @@ export const GoogleOAuthProvider: AnonGroupProvider = {
     const googleJWTPubkey = await fetchGooglePublicKey(keyId);
 
     // Generate proof using JWT circuit
-    const proof = await JWT_CIRCUIT_HELPER.generateProof({
+    const proof = await JWTCircuitHelper.generateProof({
       idToken,
       jwtPubkey: googleJWTPubkey,
       ephemeralKey: ephemeralKey,
       domain,
     });
+    const googleJWTPubkeyModulus = await pubkeyModulusFromJWK(googleJWTPubkey);
+
+    console.log(await JWTCircuitHelper.verifyProof(proof.proof, {
+      domain,
+      jwtPubKey: googleJWTPubkeyModulus,
+      ephemeralPubkey: ephemeralKey.publicKey,
+      ephemeralPubkeyExpiry: ephemeralKey.expiry,
+    }));
 
     const anonGroup = GoogleOAuthProvider.getAnonGroup(domain);
 
     const proofArgs = {
       keyId,
+      jwtCircuitVersion: JWTCircuitHelper.version,
     };
 
     return {
@@ -62,19 +72,25 @@ export const GoogleOAuthProvider: AnonGroupProvider = {
     anonGroupId: string,
     ephemeralPubkey: bigint,
     ephemeralPubkeyExpiry: Date,
-    proofArgs: { keyId: string }
+    proofArgs: { keyId: string, jwtCircuitVersion: string }
   ) => {
+    if (proofArgs.jwtCircuitVersion !== JWTCircuitHelper.version) {
+      throw new Error(
+        'This proof was generated with an older version of StealthNote JWT circuit and ' +
+        'cannot be verified at this time. You can run an older version of the app to verify this proof.'
+      );
+    }
+
     // Verify the pubkey belongs to Google
     const googlePubkeyJWK = await fetchGooglePublicKey(proofArgs.keyId);
     if (!googlePubkeyJWK) {
-      alert(`You can no longer verify this message as Google has rotated their public key.`)
       throw new Error(
         "[Google OAuth] Proof verification failed: could not validate Google public key."
       );
     }
     const googleJWTPubkeyModulus = await pubkeyModulusFromJWK(googlePubkeyJWK);
 
-    return await JWT_CIRCUIT_HELPER.verifyProof(proof, {
+    return await JWTCircuitHelper.verifyProof(proof, {
       domain: anonGroupId,
       jwtPubKey: googleJWTPubkeyModulus,
       ephemeralPubkey: ephemeralPubkey,

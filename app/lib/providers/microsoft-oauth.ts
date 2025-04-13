@@ -1,4 +1,4 @@
-import { JWT_CIRCUIT_HELPER } from "../circuits/jwt-0.3.0";
+import { JWTCircuitHelper } from "../circuits/jwt";
 import { AnonGroupProvider, EphemeralKey } from "../types";
 import { pubkeyModulusFromJWK } from "../utils";
 
@@ -35,7 +35,7 @@ export const MicrosoftOAuthProvider: AnonGroupProvider = {
     const microsoftJWTPubkey = await fetchMicrosoftPublicKey(keyId);
 
     // Generate proof using JWT circuit
-    const proof = await JWT_CIRCUIT_HELPER.generateProof({
+    const proof = await JWTCircuitHelper.generateProof({
       idToken,
       jwtPubkey: microsoftJWTPubkey,
       ephemeralKey: ephemeralKey,
@@ -71,7 +71,7 @@ export const MicrosoftOAuthProvider: AnonGroupProvider = {
     }
     const microsoftJWTPubkeyModulus = await pubkeyModulusFromJWK(microsoftPubkeyJWK);
 
-    return await JWT_CIRCUIT_HELPER.verifyProof(proof, {
+    return await JWTCircuitHelper.verifyProof(proof, {
       domain: anonGroupId,
       jwtPubKey: microsoftJWTPubkeyModulus,
       ephemeralPubkey: ephemeralPubkey,

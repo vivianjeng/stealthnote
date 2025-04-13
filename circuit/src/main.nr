@@ -31,9 +31,9 @@ fn main(
     partial_hash: [u32; 8],
     full_data_length: u32,
     base64_decode_offset: u32,
-    jwt_pubkey_modulus_limbs: pub [Field; 18],
-    jwt_pubkey_redc_params_limbs: [Field; 18],
-    jwt_signature_limbs: [Field; 18],
+    jwt_pubkey_modulus_limbs: pub [u128; 18],
+    jwt_pubkey_redc_params_limbs: [u128; 18],
+    jwt_signature_limbs: [u128; 18],
     domain: pub BoundedVec<u8, MAX_DOMAIN_LENGTH>,
     ephemeral_pubkey: pub Field,
     ephemeral_pubkey_salt: Field,
@@ -62,12 +62,6 @@ fn main(
     );
 
     assert(nonce_field == ephemeral_pubkey_hash, "invalid nonce");
-
-    // Get jwt expiration claim
-    // let exp = jwt.get_claim_number("exp".as_bytes());
-
-    // Assert JWT expiration is greater than ephemeral_pubkey_expiry
-    // assert(exp > ephemeral_pubkey_expiry, "JWT expired");
 
     // Assert email_verified claim
     jwt.assert_claim_bool("email_verified".as_bytes(), true);

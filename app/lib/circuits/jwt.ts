@@ -6,7 +6,8 @@ import { splitBigIntToLimbs } from "../utils";
 
 const MAX_DOMAIN_LENGTH = 64;
 
-export const JWT_CIRCUIT_HELPER = {
+export const JWTCircuitHelper = {
+  version: "0.3.1",
   generateProof: async ({
     idToken,
     jwtPubkey,
@@ -54,7 +55,7 @@ export const JWT_CIRCUIT_HELPER = {
     console.log("JWT circuit inputs", inputs);
 
     const { Noir, UltraHonkBackend } = await initProver();
-    const circuitArtifact = await import(`../../assets/jwt-0.3.0/circuit.json`);
+    const circuitArtifact = await import(`../../assets/jwt/circuit.json`);
     const backend = new UltraHonkBackend(circuitArtifact.bytecode, { threads: 8 });
     const noir = new Noir(circuitArtifact as CompiledCircuit);
 
@@ -92,7 +93,7 @@ export const JWT_CIRCUIT_HELPER = {
 
     const { BarretenbergVerifier } = await initVerifier();
 
-    const vkey = await import(`../../assets/jwt-0.3.0/circuit-vkey.json`);
+    const vkey = await import(`../../assets/jwt/circuit-vkey.json`);
 
     // Public Inputs = pubkey_limbs(18) + domain(64) + ephemeral_pubkey(1) + ephemeral_pubkey_expiry(1) = 84
     const publicInputs = [];
