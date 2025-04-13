@@ -15,6 +15,15 @@ type MessageFormProps = {
   onSubmit: (message: SignedMessageWithProof) => void;
 };
 
+const prompts = (companyName: string) => [
+  `What’s the tea at ${companyName}?`,
+  `What’s going unsaid at ${companyName}?`,
+  `What’s happening behind the scenes at ${companyName}?`,
+  `What would you say if you weren’t being watched?`,
+  `What’s the thing nobody’s admitting at ${companyName}?`,
+];
+const randomPromptIndex = Math.floor(Math.random() * prompts("").length);
+
 const MessageForm: React.FC<MessageFormProps> = ({ isInternal, onSubmit }) => {
   const [currentGroupId, setCurrentGroupId] = useLocalStorage<string | null>(
     "currentGroupId",
@@ -101,17 +110,15 @@ const MessageForm: React.FC<MessageFormProps> = ({ isInternal, onSubmit }) => {
 
   const isTextAreaDisabled = !!isRegistering || isPosting || !isRegistered;
 
+  const randomPrompt = prompts(currentGroupId ?? "your company")[randomPromptIndex]
+
   return (
     <div className="message-form">
       <div style={{ position: "relative" }}>
         <textarea
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          placeholder={
-            isRegistered
-              ? `What is happening at ${currentGroupId}?`
-              : `What is happening at your company?`
-          }
+          placeholder={randomPrompt}
           maxLength={280}
           disabled={isTextAreaDisabled}
         />
