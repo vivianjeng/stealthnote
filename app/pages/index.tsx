@@ -6,7 +6,7 @@ export default function HomePage() {
   return (
     <>
       <Head>
-        <title>StealthNote</title>
+        <title>StealthNote - Anonymous messages from your coworkers</title>
       </Head>
 
       <div className="home-page">
