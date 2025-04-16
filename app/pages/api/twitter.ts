@@ -30,6 +30,7 @@ export default async function handler(
   }
 
   try {
+    console.log('Getting latest messages to tweet');
     const messages = await getLatestMessages();
 
     if (messages.length === 0) {
@@ -65,11 +66,11 @@ const getLatestMessages = async (): Promise<Message[]> => {
     .select('id, text, anonGroupId:group_id')
     .eq('internal', false)
     .eq('tweeted', false)
-    .gt('likes', 0)
+    .gte('likes', 3)
     // Only tweet messages from the last 7 days
     .gt('timestamp', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
     .order('likes', { ascending: false })
-    .limit(1);
+    .limit(3);
 
   if (error) {
     console.error('Error fetching messages:', error);
@@ -112,6 +113,7 @@ const postTweet = async (message: Message): Promise<boolean> => {
     if (message.text.length <= maxContentLength) {
       // If message fits in one tweet
       const tweet = prefix + message.text + suffix;
+      console.log('Tweeting:', tweet);
       await twitterClient.v2.tweet(tweet);
     } else {
       // Split into multiple tweets
