@@ -11,6 +11,22 @@ Try it out at [stealthnote.xyz](https://stealthnote.xyz).
 
 Read how it works [here](https://saleel.xyz/blog/stealthnote/).
 
+## Compile
+
+```sh
+cd circuit
+sh ./build.sh
+```
+
+## Prove
+
+```sh
+nargo execute
+```
+
+```sh
+bb prove -b ./target/stealthnote_jwt.json -w ./target/stealthnote_jwt.gz -o ./target 
+```
 
 ## Contributing
 
